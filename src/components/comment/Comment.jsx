@@ -9,11 +9,13 @@ const Comment = ({ userId, movieCode }) => {
     const [hasMore, setHasMore] = useState(true);
     const [showReplies, setShowReplies] = useState({});
     const [showFullContent, setShowFullContent] = useState({});
+    const [totalComments, setTotalComments] = useState(0); // Thêm state cho tổng số comment
     const commentsPerPage = 5;
     const maxLength = 100;
 
     useEffect(() => {
         fetchComments(true);
+        fetchTotalCommentCount(); // Gọi API để lấy tổng số comment khi movieCode thay đổi
     }, [movieCode]);
 
     const fetchComments = async (reset = false) => {
@@ -44,6 +46,24 @@ const Comment = ({ userId, movieCode }) => {
         }
     };
 
+
+    const fetchTotalCommentCount = async () => {
+        try {
+            const response = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/v1/comment/total-count?movieCode=${movieCode}`,
+                {
+                    headers: {
+                        "Accept-language": "vi",
+                    },
+                }
+            );
+            setTotalComments(response.data); 
+        } catch (error) {
+            console.error("Error fetching total comment count:", error);
+            setTotalComments(0); 
+        }
+    };
+
     const handleAddComment = async () => {
         if (!newComment.trim() || !userId) return;
 
@@ -61,6 +81,7 @@ const Comment = ({ userId, movieCode }) => {
             );
             setComments([response.data, ...comments]);
             setNewComment("");
+            fetchTotalCommentCount(); // Cập nhật lại tổng số sau khi thêm comment
         } catch (error) {
             console.error("Error adding comment:", error);
         }
@@ -89,6 +110,7 @@ const Comment = ({ userId, movieCode }) => {
             );
             setNewReply({ ...newReply, [commentId]: "" });
             setShowReplies({ ...showReplies, [commentId]: true });
+            fetchTotalCommentCount(); 
         } catch (error) {
             console.error("Error adding reply:", error);
         }
@@ -107,6 +129,7 @@ const Comment = ({ userId, movieCode }) => {
                 }
             );
             setComments(comments.filter((comment) => comment.id !== commentId));
+            fetchTotalCommentCount();
         } catch (error) {
             console.error("Error deleting comment:", error);
         }
@@ -134,6 +157,7 @@ const Comment = ({ userId, movieCode }) => {
                         : comment
                 )
             );
+            fetchTotalCommentCount(); 
         } catch (error) {
             console.error("Error deleting reply:", error);
         }
@@ -165,10 +189,7 @@ const Comment = ({ userId, movieCode }) => {
         return text.substring(0, maxLength) + "...";
     };
 
-    const totalComments = comments.reduce(
-        (acc, comment) => acc + 1 + (comment.replies ? comment.replies.length : 0),
-        0
-    );
+   
 
     return (
         <div School Teacherdiv className="max-w-2xl p-4 mx-auto my-6 font-sans text-gray-200 rounded-2xl bg-gray-900">
