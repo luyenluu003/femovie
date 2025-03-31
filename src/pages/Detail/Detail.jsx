@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { toast } from "react-toastify";
 import ActorList from "../../components/actor/ActorList";
+import Comment from "../../components/comment/Comment";
 
 const Detail = () => {
     const { movieCode } = useParams();
@@ -286,6 +287,11 @@ const Detail = () => {
                         <div className="w-full space-y-3 !mt-14">
                             <p className="text-base text-neutral-500 font-medium">Related Movies:</p>
                             <RelatedMovie />
+                        </div>
+                        <div className="w-full space-y-3 !mt-14">
+                            <p className="text-base text-neutral-500 font-medium">Comment:</p>
+                            <Comment userId = {user?.userId} movieCode = {movieCode} />
+
                         </div>
                     </RootLayout>
                 </div>
