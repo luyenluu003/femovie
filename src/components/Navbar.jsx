@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Notification from './notification/Notification';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import UserMenu from './User/UserMenu';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -17,11 +18,13 @@ const Navbar = () => {
     const [open, setOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
-    const [newNotificationCount, setNewNotificationCount] = useState(0); // State mới để đếm thông báo
+    const [newNotificationCount, setNewNotificationCount] = useState(0);
     const searchRef = useRef(null);
+    const userMenuRef = useRef(null);
 
     const { user } = useSelector((state) => state.auth);
     const userId = user?.userId;
@@ -44,19 +47,25 @@ const Navbar = () => {
         navigate("/login");
     };
 
-    // Callback để tăng số lượng thông báo mới từ Notification component
     const handleNewNotification = () => {
         setNewNotificationCount((prev) => prev + 1);
     };
 
-    // Reset số lượng thông báo khi mở Notification
     const handleNotificationOpen = () => {
         setIsNotificationOpen(true);
-        setNewNotificationCount(0); // Reset khi mở
+        setNewNotificationCount(0);
     };
 
     const handleNotificationClose = () => {
         setIsNotificationOpen(false);
+    };
+
+    const handleUserMenuToggle = () => {
+        setIsUserMenuOpen((prev) => !prev);
+    };
+
+    const handleUserMenuClose = () => {
+        setIsUserMenuOpen(false);
     };
 
     useEffect(() => {
@@ -80,6 +89,9 @@ const Navbar = () => {
                 setSearchResults([]);
                 setSuggestions([]);
                 setSearchQuery('');
+            }
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+                setIsUserMenuOpen(false);
             }
         };
         document.addEventListener('click', handleClickOutside);
@@ -256,23 +268,33 @@ const Navbar = () => {
                             open={isNotificationOpen}
                             handleClose={handleNotificationClose}
                             onNewNotification={handleNewNotification}
-                            style={{ display: 'none' }} // Ẩn khi không mở, nhưng vẫn mount
+                            style={{ display: 'none' }}
                         />
 
-                        <button className="w-8 h-8 rounded-full border border-neutral-700/70 p-0.5">
-                            <img
-                                src="https://anhcute.net/wp-content/uploads/2024/11/anh-anime.jpg"
-                                alt=""
-                                className="w-full h-full object-cover object-center rounded-full"
-                            />
-                        </button>
+                        {/* Avatar - Khi click mở UserMenu */}
+                        <div className="relative" ref={userMenuRef}>
+                            <button
+                                className="w-8 h-8 rounded-full border border-neutral-700/70 p-0.5"
+                                onClick={handleUserMenuToggle}
+                            >
+                                <img
+                                    src={user?.avatar || "https://anhcute.net/wp-content/uploads/2024/11/anh-anime.jpg"}
+                                    alt="avatar"
+                                    className="w-full h-full object-cover object-center rounded-full"
+                                />
+                            </button>
 
-                        <button
+                            {isUserMenuOpen && (
+                                <UserMenu user={user} onClose={handleUserMenuClose} onLogout={handleLogout} />
+                            )}
+                        </div>
+
+                        {/* <button
                             onClick={handleLogout}
                             className="border border-gray-500 rounded-full px-6 py-2 hover:bg-gray-100 transition-all text-green-500"
                         >
                             Logout
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>

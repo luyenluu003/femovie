@@ -12,6 +12,10 @@ import VideoPlayer from "./pages/videoplayer/VideoPlayer"
 import PageSeries from "./pages/series/PageSeries"
 import PageMovieHot from "./pages/movieHot/PageMovieHot"
 import Playlist from "./pages/PlayList/Playlist"
+import VipPackage from "./pages/paypal/VipPackage"
+import Success from "./pages/paypal/Success"
+import Cancel from "./pages/paypal/Cancel"
+import Profile from "./pages/user/Profile"
 
 const App = () => {
 
@@ -32,6 +36,11 @@ const App = () => {
           <Route path="/movie/video-player/:movieCode" element={<VideoPlayer />} />
           <Route path="/my-lists/:userId" element={<Playlist />} />
           <Route path="/actor/:actorId" element={<DetailActor />} />
+          <Route path="/vip" element={<VipPackage />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/cancel" element={<Cancel />} />
+          <Route path="/profile" element={<Profile />} />
+
         </Routes>
     </div>
   )

@@ -98,7 +98,7 @@ const Series = () => {
                                         language={movie.language}
                                         releaseDate={movie.releaseDate}
                                         duration={movie.duration}
-                                        episodes={movie.episodes?.length || 0} // Truyền số tập vào MovieCard
+                                        episodes={movie.episodes?.length || 0} 
                                     />
                                 </SwiperSlide>
                             ))

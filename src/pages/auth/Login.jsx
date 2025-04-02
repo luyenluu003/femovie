@@ -60,6 +60,9 @@ const Login = () => {
                     userName: data.data.userName,
                     avatar: data.data.avatar,
                     phoneNumber: data.data.phoneNumber,
+                    vipLevel : data.data.vipLevel,
+                    vipStartDate : data.data.vipStartDate,
+                    vipEndDate : data.data.vipEndDate,
                 };
 
                 dispatch(loginSuccess({ user, token }));
@@ -92,6 +95,9 @@ const Login = () => {
                 userName: response.data.data.userName,
                 avatar: response.data.data.avatar,
                 phoneNumber: response.data.data.phoneNumber,
+                vipLevel : response.data.data.vipLevel,
+                vipStartDate : response.data.data.vipStartDate,
+                vipEndDate : response.data.data.vipEndDate,
             };
 
             dispatch(loginSuccess({ user, token }));
