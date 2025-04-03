@@ -16,6 +16,9 @@ import VipPackage from "./pages/paypal/VipPackage"
 import Success from "./pages/paypal/Success"
 import Cancel from "./pages/paypal/Cancel"
 import Profile from "./pages/user/Profile"
+import ChangePassword from "./pages/user/ChangePassword"
+import TermsOfUse from "./pages/TermsOfUse/TermsOfUse"
+import Chatbot from "./pages/chatbot/Chatbot"
 
 const App = () => {
 
@@ -40,8 +43,11 @@ const App = () => {
           <Route path="/success" element={<Success />} />
           <Route path="/cancel" element={<Cancel />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
 
         </Routes>
+        <Chatbot />
     </div>
   )
 }
