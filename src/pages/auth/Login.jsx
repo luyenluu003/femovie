@@ -6,7 +6,16 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../redux/authSlice";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Icon mắt để toggle mật khẩu
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+// Hàm kiểm tra số điện thoại cơ bản phía client
+const isValidPhoneNumber = (phoneNumber) => {
+    // Loại bỏ khoảng trắng và kiểm tra định dạng cơ bản
+    const cleanedPhone = phoneNumber.replace(/\s/g, "");
+    // Kiểm tra xem có bắt đầu bằng +84 và chỉ chứa số
+    const phoneRegex = /^\+84\d{9}$/;
+    return phoneRegex.test(cleanedPhone);
+};
 
 const Login = () => {
     const navigate = useNavigate();
@@ -15,18 +24,26 @@ const Login = () => {
     const [state, setState] = useState("Sign Up"); // "Sign Up" là login, "Login" là register
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("+84"); // Mặc định bắt đầu bằng +84
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false); // Trạng thái hiển thị/ẩn mật khẩu
+    const [showPassword, setShowPassword] = useState(false);
+    const [phoneError, setPhoneError] = useState(""); // Lưu lỗi số điện thoại
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
+
+        // Kiểm tra số điện thoại trước khi gửi
+        if (state !== "Sign Up" && !isValidPhoneNumber(phoneNumber)) {
+            setPhoneError("Số điện thoại không hợp lệ. Vui lòng nhập số bắt đầu bằng +84 và có 10 chữ số.");
+            return;
+        }
 
         try {
             axios.defaults.withCredentials = true;
             let response;
 
             if (state !== "Sign Up") {
+                // Đăng ký (Register)
                 const timestamp = Date.now();
                 console.log("timestamp:", timestamp);
 
@@ -38,7 +55,24 @@ const Login = () => {
                         headers: { "Accept-language": "vi" },
                     }
                 );
+
+                const data = response.data;
+                console.log("DATA REGISTER =>>>", data);
+
+                if (data && (data.message === "Registration Success" || data.data === true)) {
+                    toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+                    setState("Sign Up");
+                    setUsername("");
+                    setEmail("");
+                    setPhoneNumber("+84"); // Reset về +84
+                    setPassword("");
+                    setPhoneError(""); // Xóa lỗi nếu có
+                    navigate("/login");
+                } else {
+                    throw new Error(data.message || "Đăng ký thất bại!");
+                }
             } else {
+                // Đăng nhập (Login)
                 response = await axios.post(
                     `${import.meta.env.VITE_BACKEND_URL}/v1/authen/login/email`,
                     null,
@@ -47,39 +81,50 @@ const Login = () => {
                         headers: { "Accept-language": "vi" },
                     }
                 );
-            }
 
-            const data = response.data;
-            console.log("DATA =>>>", data);
+                const data = response.data;
+                console.log("DATA LOGIN =>>>", data);
 
-            if (data && data.data) {
-                const token = data.data.token;
-                const user = {
-                    userId: data.data.userId,
-                    email: data.data.email,
-                    userName: data.data.userName,
-                    avatar: data.data.avatar,
-                    phoneNumber: data.data.phoneNumber,
-                    vipLevel : data.data.vipLevel,
-                    vipStartDate : data.data.vipStartDate,
-                    vipEndDate : data.data.vipEndDate,
-                };
+                if (data && data.data) {
+                    const token = data.data.token;
+                    const user = {
+                        userId: data.data.userId,
+                        email: data.data.email,
+                        userName: data.data.userName,
+                        avatar: data.data.avatar,
+                        phoneNumber: data.data.phoneNumber,
+                        vipLevel: data.data.vipLevel,
+                        vipStartDate: data.data.vipStartDate,
+                        vipEndDate: data.data.vipEndDate,
+                    };
 
-                dispatch(loginSuccess({ user, token }));
-
-                if (state !== "Sign Up") {
-                    navigate("/login"); // Sau khi đăng ký, chuyển về trang login
+                    dispatch(loginSuccess({ user, token }));
+                    toast.success("Đăng nhập thành công!");
+                    navigate("/");
                 } else {
-                    navigate("/"); // Sau khi đăng nhập, về trang chủ
+                    throw new Error(data.message || "Đăng nhập thất bại!");
                 }
-            } else {
-                toast.error(data.message || "Login failed!");
             }
         } catch (error) {
             console.error("Error caught:", error);
-            toast.error(error.response?.data?.message || "Something went wrong!");
+            toast.error(error.response?.data?.message || error.message || "Đã xảy ra lỗi!");
         }
     };
+
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        // Chỉ cho phép nhập +84 ở đầu và các số sau đó
+        if (value.startsWith("+84") && /^\+84\d{0,9}$/.test(value)) {
+            setPhoneNumber(value);
+            setPhoneError("");
+        } else if (value === "+84") {
+            setPhoneNumber(value);
+            setPhoneError("");
+        } else {
+            setPhoneError("Số điện thoại phải bắt đầu bằng +84 và chỉ chứa số.");
+        }
+    };
+
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             const response = await axios.post(
@@ -87,7 +132,7 @@ const Login = () => {
                 { credential: credentialResponse.credential },
                 { headers: { "Accept-language": "vi" } }
             );
-            console.log("res==>", response.data)
+            console.log("res==>", response.data);
             const token = response.data.data.token;
             const user = {
                 userId: response.data.data.userId,
@@ -95,13 +140,12 @@ const Login = () => {
                 userName: response.data.data.userName,
                 avatar: response.data.data.avatar,
                 phoneNumber: response.data.data.phoneNumber,
-                vipLevel : response.data.data.vipLevel,
-                vipStartDate : response.data.data.vipStartDate,
-                vipEndDate : response.data.data.vipEndDate,
+                vipLevel: response.data.data.vipLevel,
+                vipStartDate: response.data.data.vipStartDate,
+                vipEndDate: response.data.data.vipEndDate,
             };
 
             dispatch(loginSuccess({ user, token }));
-
             toast.success("Đăng nhập bằng Google thành công!");
             navigate("/");
         } catch (error) {
@@ -109,6 +153,7 @@ const Login = () => {
             console.error("Google login error:", error);
         }
     };
+
     const handleGoogleError = () => {
         toast.error("Đăng nhập bằng Google thất bại");
         console.log("Google Login Failed");
@@ -148,14 +193,18 @@ const Login = () => {
                                 <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
                                     <img src={assets.person_icon} alt="" />
                                     <input
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        onChange={handlePhoneChange}
                                         value={phoneNumber}
-                                        className="bg-transparent outline-none flex-1"
+                                        className={`bg-transparent outline-none flex-1 ${phoneError ? "text-red-400" : ""}`}
                                         type="text"
-                                        placeholder="Phone Number"
+                                        placeholder="+84xxxxxxxxx"
                                         required
+                                        maxLength={12} // +84 và 9 số
                                     />
                                 </div>
+                                {phoneError && (
+                                    <p className="text-red-400 text-xs mt-1">{phoneError}</p>
+                                )}
                             </>
                         )}
 
@@ -177,7 +226,7 @@ const Login = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 value={password}
                                 className="bg-transparent outline-none flex-1"
-                                type={showPassword ? "text" : "password"} // Toggle giữa text/password
+                                type={showPassword ? "text" : "password"}
                                 placeholder="Password"
                                 required
                             />
@@ -208,7 +257,6 @@ const Login = () => {
                         )}
                     </form>
 
-                    {/* Nút đăng nhập bằng Google */}
                     <div className="mt-6 flex justify-center">
                         <GoogleLogin
                             onSuccess={handleGoogleSuccess}
