@@ -107,7 +107,7 @@ const Success = () => {
         } else if (!isProcessed) {
             setMessage('Thiếu thông tin thanh toán');
             toast.error('Thiếu thông tin thanh toán');
-            navigate('/vip');
+            navigate('/vip-purchase');
         }
         hasRun.current = true;
     }

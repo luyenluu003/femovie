@@ -34,6 +34,7 @@ const Navbar = () => {
         { label: 'Series', path: '/series' },
         { label: 'Movies', path: '/movies' },
         { label: 'Hots', path: '/moviehots' },
+        { label: 'Vips', path: '/movievips' },
         { label: 'My Lists', path: `/my-lists/${userId}` },
     ];
 

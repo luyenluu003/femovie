@@ -61,7 +61,7 @@ const UserMenu = ({ user, onClose, onLogout }) => {
             </button>
 
             <button
-                onClick={() => { navigate('/vip'); onClose(); }}
+                onClick={() => { navigate('/vip-purchase'); onClose(); }}
                 className="w-full flex items-center px-4 py-3 text-green-500 hover:bg-green-800 rounded-lg transition-all"
             >
                 <FaCrown className="mr-3" /> Mua gói VIP

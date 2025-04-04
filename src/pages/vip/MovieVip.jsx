@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { TbReload } from 'react-icons/tb';
 
-const Movies = () => {
+const MovieVip = () => {
     const { user } = useSelector((state) => state.auth);
     const [movies, setMovies] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -38,16 +38,16 @@ const Movies = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                let url = import.meta.env.VITE_BACKEND_URL + "/v1/movie/allMovie";
+                let url = import.meta.env.VITE_BACKEND_URL + "/v1/movie/movievip";
                 let params = { 
                     userId: user?.userId, 
-                    type: false, 
-                    page: page,
+                    isVip: 1, 
+                    page: page, 
                     pageSize: pageSize 
                 };
 
                 if (selectedCategory) {
-                    url = import.meta.env.VITE_BACKEND_URL + "/v1/movie/category";
+                    url = import.meta.env.VITE_BACKEND_URL + "/v1/movie/movieVip/category";
                     params.categoryId = selectedCategory;
                 }
 
@@ -57,9 +57,8 @@ const Movies = () => {
                 });
 
                 const newMovies = response.data || [];
-        
                 setMovies(prev => page === 1 ? newMovies : [...prev, ...newMovies]);
-            
+        
                 setHasMore(newMovies.length === pageSize);
             } catch (error) {
                 toast.error("Lỗi khi lấy danh sách movie");
@@ -75,7 +74,6 @@ const Movies = () => {
     const handleLoadMore = () => {
         setPage(prev => prev + 1); 
     };
-
     useEffect(() => {
         setPage(1); 
         setMovies([]); 
@@ -90,7 +88,7 @@ const Movies = () => {
                         <div className='w-full flex items-center gap-6'>
                             <div className='flex items-center gap-5'>
                                 <p className="text-3xl text-neutral-50 font-semibold">
-                                    MOVIES
+                                    MOVIES VIP
                                 </p>
                                 <select
                                     name=""
@@ -125,6 +123,7 @@ const Movies = () => {
                                         language={movie.language}
                                         releaseDate={movie.releaseDate}
                                         duration={movie.duration}
+                                        episodes={movie.episodes?.length || 0} 
                                         isVip={movie.isVip}
                                     />
                                 ))
@@ -152,4 +151,4 @@ const Movies = () => {
     );
 }
 
-export default Movies;
+export default MovieVip;

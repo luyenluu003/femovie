@@ -82,6 +82,7 @@ const RelatedMovie = () => {
                                         // language= {movie.language}
                                         // releaseDate= {movie.releaseDate}
                                         // duration= {movie.duration}
+                                        isVip={movie.isVip}
                                     />
                                 </SwiperSlide>
                                 ))

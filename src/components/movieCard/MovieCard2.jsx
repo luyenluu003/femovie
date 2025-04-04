@@ -12,7 +12,7 @@ const MovieCard2 = ({
     releaseDate,
     duration,
     episodes,
-    
+    isVip, // Thêm prop isVip
 }) => {
     const titleRef = useRef(null);
     const [isOverflowed, setIsOverflowed] = useState(false);
@@ -42,6 +42,13 @@ const MovieCard2 = ({
                 {isHot ? (
                     <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md font-bold">
                         HOT
+                    </div>
+                ) : null}
+
+                {/* Hiển thị nhãn VIP nếu có */}
+                {isVip ? (
+                    <div className="absolute bottom-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-md font-bold">
+                        VIP
                     </div>
                 ) : null}
             </div>

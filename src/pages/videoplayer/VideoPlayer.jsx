@@ -5,6 +5,8 @@ import { TbRewindBackward10, TbRewindForward10 } from "react-icons/tb";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import { useLocation } from "react-router-dom";
+import Comment from "../../components/comment/Comment";
+import { useSelector } from "react-redux";
 
 const VideoPlayer = () => {
     const videoRef = useRef(null);
@@ -19,10 +21,18 @@ const VideoPlayer = () => {
     const [isMuted, setIsMuted] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
+    const [isVideoEnded, setIsVideoEnded] = useState(false);
     const hideControlsTimeoutRef = useRef(null);
 
+    const { user } = useSelector((state) => state.auth);
+
     const location = useLocation();
-    const videoUrl = location.state?.videoUrl;
+    const { videoUrl, episodeNumber, episodes, movieCode } = location.state || {};
+
+    const [currentVideoUrl, setCurrentVideoUrl] = useState(videoUrl);
+    const [currentEpisodeNumber, setCurrentEpisodeNumber] = useState(episodeNumber);
+
+    console.log("EPISODES==>", episodes)
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -61,6 +71,18 @@ const VideoPlayer = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            const handleEnded = () => {
+                setIsPlaying(false);
+                setIsVideoEnded(true);
+            };
+            video.addEventListener("ended", handleEnded);
+            return () => video.removeEventListener("ended", handleEnded);
+        }
+    }, []);
+
     const startHideControlsTimer = () => {
         if (hideControlsTimeoutRef.current) {
             clearTimeout(hideControlsTimeoutRef.current);
@@ -96,6 +118,7 @@ const VideoPlayer = () => {
             videoRef.current.pause();
         } else {
             videoRef.current.play();
+            setIsVideoEnded(false);
         }
         setIsPlaying(!isPlaying);
     };
@@ -116,13 +139,12 @@ const VideoPlayer = () => {
         setProgress(newProgress);
     };
 
-    // Xử lý nhấp vào thanh tiến trình để tua
     const handleProgressClick = (e) => {
         const rect = e.target.getBoundingClientRect();
-        const clickPosition = e.clientX - rect.left; // Vị trí nhấp trên thanh
-        const totalWidth = rect.width; // Chiều rộng thanh
-        const newProgress = (clickPosition / totalWidth) * 100; // Tỷ lệ tiến trình (%)
-        const newTime = (newProgress / 100) * duration; // Thời gian mới
+        const clickPosition = e.clientX - rect.left;
+        const totalWidth = rect.width;
+        const newProgress = (clickPosition / totalWidth) * 100;
+        const newTime = (newProgress / 100) * duration;
         videoRef.current.currentTime = newTime;
         setProgress(newProgress);
     };
@@ -182,12 +204,31 @@ const VideoPlayer = () => {
         }
     };
 
+    const handleEpisodeChange = (newVideoUrl, newEpisodeNumber) => {
+        setCurrentVideoUrl(newVideoUrl);
+        setCurrentEpisodeNumber(newEpisodeNumber);
+        setIsVideoEnded(false);
+        setCurrentTime(0);
+        setProgress(0);
+        setIsPlaying(false);
+        if (videoRef.current) {
+            videoRef.current.load();
+        }
+    };
+
     return (
         <main className="w-full min-h-screen bg-black text-neutral-500 flex flex-col overflow-y-auto">
             <Navbar />
             <div className="w-full min-h-screen space-y-16 flex flex-col">
                 <div className="w-full pb-16 pt-[10ch] mt-10">
                     <RootLayout className="">
+                        {/* Hiển thị số tập hiện tại nếu là series */}
+                        {currentEpisodeNumber && (
+                            <h1 className="text-neutral-50 text-2xl mb-4 text-center">
+                                Tập {currentEpisodeNumber}
+                            </h1>
+                        )}
+
                         <div
                             ref={playerRef}
                             className={`relative w-full md:aspect-[16/8] aspect-auto mx-auto group rounded-xl overflow-hidden ease-in-out duration-300 ${isFullScreen ? "h-screen" : ""}`}
@@ -195,7 +236,7 @@ const VideoPlayer = () => {
                             onMouseLeave={handleMouseLeave}
                         >
                             <video
-                                src={videoUrl}
+                                src={currentVideoUrl}
                                 className="w-full"
                                 ref={videoRef}
                                 onClick={togglePlayPause}
@@ -271,10 +312,9 @@ const VideoPlayer = () => {
                                         </button>
                                     </div>
 
-                                    {/* Thanh tiến trình */}
                                     <div
                                         className="absolute bottom-0 w-full border-e-neutral-600 h-1"
-                                        onClick={handleProgressClick} // Thêm sự kiện nhấp
+                                        onClick={handleProgressClick}
                                     >
                                         <input
                                             type="range"
@@ -297,6 +337,32 @@ const VideoPlayer = () => {
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Danh sách tập phim luôn hiển thị nếu là series */}
+                        {episodes?.length > 0 && (
+                            <div className="mt-6">
+                                <h2 className="text-neutral-50 text-xl mb-4 text-center">Danh sách tập</h2>
+                                <div className="flex flex-wrap gap-4 justify-center">
+                                    {episodes.map((episode) => (
+                                        <button
+                                            key={episode.id}
+                                            onClick={() => handleEpisodeChange(episode.videoUrl, episode.episodeNumber)}
+                                            className={`px-4 py-2 rounded-full transition duration-300 ${
+                                                currentEpisodeNumber === episode.episodeNumber
+                                                    ? "bg-green-700 text-neutral-50"
+                                                    : "bg-green-500 text-neutral-50 hover:bg-green-500/80"
+                                            }`}
+                                        >
+                                            Tập {episode.episodeNumber}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                         <div className="w-full space-y-3 !mt-14">
+                            <p className="text-base text-neutral-500 font-medium">Comment:</p>
+                            <Comment userId={user?.userId} movieCode={movieCode} />
                         </div>
                     </RootLayout>
                 </div>

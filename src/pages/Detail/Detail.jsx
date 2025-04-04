@@ -3,7 +3,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import RootLayout from "../../layout/RootLayout";
 import { FaPlay, FaStar, FaHeart } from "react-icons/fa";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom"; // Thêm useNavigate
 import { MdHd } from "react-icons/md";
 import RelatedMovie from "../../components/relatedMovie/RelatedMovie";
 import { useSelector } from "react-redux";
@@ -14,11 +14,13 @@ import Comment from "../../components/comment/Comment";
 
 const Detail = () => {
     const { movieCode } = useParams();
+    const navigate = useNavigate(); // Thêm navigate để điều hướng
     const { user } = useSelector((state) => state.auth);
     const [movie, setMovie] = useState({});
     const [isLiked, setIsLiked] = useState(false);
-    const [userRating, setUserRating] = useState(0); // Đánh giá của người dùng hiện tại
-    const [averageRating, setAverageRating] = useState({ averageRating: 0, totalRatings: 0 }); // Trung bình đánh giá từ API
+    const [userRating, setUserRating] = useState(0);
+    const [averageRating, setAverageRating] = useState({ averageRating: 0, totalRatings: 0 });
+    const [showVipModal, setShowVipModal] = useState(false); // Trạng thái hiển thị modal VIP
 
     // Lấy thông tin phim
     useEffect(() => {
@@ -82,7 +84,6 @@ const Detail = () => {
 
     // Lấy đánh giá của người dùng hiện tại và reset khi movieCode thay đổi
     useEffect(() => {
-        // Reset userRating khi movieCode thay đổi
         setUserRating(0);
 
         const fetchUserRating = async () => {
@@ -97,7 +98,6 @@ const Detail = () => {
                     setUserRating(response.data.rating || 0);
                 }
             } catch (error) {
-                // Nếu không có đánh giá (HTTP 204), giữ userRating = 0
                 if (error.response?.status !== 204) {
                     console.error("Lỗi khi lấy đánh giá của người dùng:", error);
                 }
@@ -163,7 +163,6 @@ const Detail = () => {
             if (response.status === 200 || response.status === 201) {
                 setUserRating(rating);
                 toast.success("Đánh giá của bạn đã được gửi!");
-                // Cập nhật lại trung bình đánh giá
                 const avgResponse = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/v1/rating/average`, {
                     params: { movieCode },
                     headers: { "Accept-language": "vi" },
@@ -174,6 +173,27 @@ const Detail = () => {
             toast.error("Lỗi khi gửi đánh giá");
             console.error("Lỗi khi gửi đánh giá:", error);
         }
+    };
+
+    // Kiểm tra xem người dùng có đang trong thời hạn VIP không
+    const isUserVipActive = () => {
+        if (!user?.vipStartDate || !user?.vipEndDate) return false;
+        const currentTime = Date.now();
+        return currentTime >= user.vipStartDate && currentTime <= user.vipEndDate;
+    };
+
+    // Xử lý khi nhấn nút "Play Now"
+    const handlePlayClick = (e) => {
+        if (movie.isVip && !isUserVipActive()) {
+            e.preventDefault(); // Ngăn chuyển hướng
+            setShowVipModal(true); // Hiển thị modal
+        }
+    };
+
+    // Xử lý đóng modal và điều hướng đến trang mua VIP
+    const handleBuyVip = () => {
+        setShowVipModal(false);
+        navigate("/vip-purchase"); // Điều hướng đến trang mua VIP (tùy URL của bạn)
     };
 
     return (
@@ -199,9 +219,16 @@ const Detail = () => {
                             <div className="md:col-span-3 col-span-5 space-y-7">
                                 <div className="space-y-1.5">
                                     <div className="w-full flex items-center justify-between gap-1.5">
-                                        <h1 className="md:text-4xl text-3xl text-neutral-50 font-bold">
-                                            {movie.movieName}
-                                        </h1>
+                                        <div className="flex items-center gap-x-2">
+                                            <h1 className="md:text-4xl text-3xl text-neutral-50 font-bold">
+                                                {movie.movieName}
+                                            </h1>
+                                            {movie.isVip ? (
+                                                <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-md font-bold">
+                                                    VIP
+                                                </span>
+                                            ) : null}
+                                        </div>
                                         <div className="flex items-center gap-x-2">
                                             <p className="text-base md:text-lg text-neutral-50 font-semibold">
                                                 {averageRating.averageRating.toFixed(1)}
@@ -242,7 +269,6 @@ const Detail = () => {
                                     </div>
                                 </div>
 
-                                {/* UI đánh giá */}
                                 <div className="w-full flex items-center gap-x-4">
                                     <p className="text-base text-neutral-500 font-medium">Đánh giá của bạn:</p>
                                     <div className="flex items-center gap-x-1">
@@ -261,8 +287,14 @@ const Detail = () => {
                                 <div className="flex items-center gap-6 !mt-10">
                                     <Link
                                         to={`/movie/video-player/${movie.movieCode}`}
-                                        state={{ videoUrl: movie.videoUrl }}
+                                        state={{
+                                            videoUrl: movie.type && movie.episodes?.length > 0 ? movie.episodes[0].videoUrl : movie.videoUrl,
+                                            episodeNumber: movie.type && movie.episodes?.length > 0 ? movie.episodes[0].episodeNumber : undefined,
+                                            episodes: movie.type && movie.episodes?.length > 0 ? movie.episodes : undefined,
+                                            movieCode: movie.movieCode,
+                                        }}
                                         className="md:w-fit w-1/2 px-6 md:py-2.5 py-3 rounded-full capitalize bg-green-500 hover:bg-green-500/10 border-2 border-green-500 hover:border-green-500 flex items-center justify-center gap-x-2 text-base text-neutral-50 hover:text-neutral-100 font-normal ease-in-out duration-300 cursor-pointer"
+                                        onClick={handlePlayClick} // Thêm sự kiện onClick
                                     >
                                         <FaPlay />
                                         Play Now
@@ -279,6 +311,31 @@ const Detail = () => {
                                         {isLiked ? "Bỏ thích" : "Thích"}
                                     </button>
                                 </div>
+
+                                {movie.type && movie.episodes?.length > 0 && (
+                                    <div className="w-full space-y-3 !mt-10">
+                                        <p className="text-base text-neutral-500 font-medium">Danh sách tập:</p>
+                                        <div className="flex flex-wrap gap-4">
+                                            {movie.episodes.map((episode) => (
+                                                <Link
+                                                    key={episode.id}
+                                                    to={`/movie/video-player/${movie.movieCode}`}
+                                                    state={{
+                                                        videoUrl: episode.videoUrl,
+                                                        episodeNumber: episode.episodeNumber,
+                                                        episodes: movie.episodes,
+                                                        movieCode: movie.movieCode,
+                                                    }}
+                                                    className="px-4 py-2 bg-green-500 text-neutral-50 rounded-full hover:bg-green-500/80 transition duration-300"
+                                                    onClick={handlePlayClick} // Thêm sự kiện onClick cho từng tập
+                                                >
+                                                    Tập {episode.episodeNumber}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="w-full space-y-3 !mt-14">
                                     <ActorList actors={movie.actors || []} />
                                 </div>
@@ -290,13 +347,38 @@ const Detail = () => {
                         </div>
                         <div className="w-full space-y-3 !mt-14">
                             <p className="text-base text-neutral-500 font-medium">Comment:</p>
-                            <Comment userId = {user?.userId} movieCode = {movieCode} />
-
+                            <Comment userId={user?.userId} movieCode={movieCode} />
                         </div>
                     </RootLayout>
                 </div>
             </div>
             <Footer />
+
+            {/* Modal thông báo yêu cầu VIP */}
+            {showVipModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-neutral-800 p-6 rounded-lg shadow-lg max-w-md w-full space-y-4">
+                        <h2 className="text-xl text-neutral-50 font-bold">Yêu cầu VIP</h2>
+                        <p className="text-neutral-400">
+                            Phim này chỉ dành cho thành viên VIP. Vui lòng nâng cấp gói VIP để xem!
+                        </p>
+                        <div className="flex justify-end gap-4">
+                            <button
+                                onClick={() => setShowVipModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-neutral-50 rounded-md hover:bg-gray-600"
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                onClick={handleBuyVip}
+                                className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                            >
+                                Mua VIP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

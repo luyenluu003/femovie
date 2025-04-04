@@ -99,6 +99,7 @@ const MovieHot = () => {
                                         releaseDate= {movie.releaseDate}
                                         duration= {movie.duration}
                                         episodes={movie.episodes?.length || 0} 
+                                        isVip={movie.isVip}
                                     />
                                 </SwiperSlide>
                                 ))

@@ -11,7 +11,7 @@ const Cancel = () => {
                 </p>
                 <div className="flex gap-4 justify-center">
                     <Link
-                        to="/vip"
+                        to="/vip-purchase"
                         className="px-6 py-2 bg-green-500 text-neutral-900 rounded-full hover:bg-green-600 transition-colors"
                     >
                         Mua gói VIP

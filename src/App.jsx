@@ -19,6 +19,7 @@ import Profile from "./pages/user/Profile"
 import ChangePassword from "./pages/user/ChangePassword"
 import TermsOfUse from "./pages/TermsOfUse/TermsOfUse"
 import Chatbot from "./pages/chatbot/Chatbot"
+import MovieVip from "./pages/vip/MovieVip"
 
 const App = () => {
 
@@ -35,11 +36,12 @@ const App = () => {
           <Route path="/movies" element={<Movies />}/>
           <Route path="/series" element={<PageSeries />}/>
           <Route path="/moviehots" element={<PageMovieHot />}/>
+          <Route path="/movievips" element={<MovieVip />}/>
           <Route path="/movie-detail/:movieCode" element={<Detail />} />
           <Route path="/movie/video-player/:movieCode" element={<VideoPlayer />} />
           <Route path="/my-lists/:userId" element={<Playlist />} />
           <Route path="/actor/:actorId" element={<DetailActor />} />
-          <Route path="/vip" element={<VipPackage />} />
+          <Route path="/vip-purchase" element={<VipPackage />} />
           <Route path="/success" element={<Success />} />
           <Route path="/cancel" element={<Cancel />} />
           <Route path="/profile" element={<Profile />} />

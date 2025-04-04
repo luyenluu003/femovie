@@ -95,6 +95,7 @@ const MovieWatching = () => {
                                         language= {movie.language}
                                         releaseDate= {movie.releaseDate}
                                         duration= {movie.duration}
+                                        isVip={movie.isVip}
                                     />
                                 </SwiperSlide>
                                 ))

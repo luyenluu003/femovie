@@ -3,8 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { FaUser, FaPhone, FaEnvelope, FaLock, FaCamera, FaCrown } from 'react-icons/fa';
-import  {updateUser}  from '../../redux/authSlice'; // Đảm bảo import đúng
+import { FaUser, FaPhone, FaEnvelope, FaLock, FaCamera, FaCrown, FaArrowLeft } from 'react-icons/fa';
+import { updateUser } from '../../redux/authSlice';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const Profile = () => {
     const [formData, setFormData] = useState({
         userName: user?.userName || '',
         phoneNumber: user?.phoneNumber || '',
-        avatar: user?.avatar || 'https://anhcute.net/wp-content/uploads/2024/11/anh-anime.jpg', // Mặc định là URL
+        avatar: user?.avatar || 'https://anhcute.net/wp-content/uploads/2024/11/anh-anime.jpg',
     });
     const [loading, setLoading] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(formData.avatar);
@@ -40,14 +40,14 @@ const Profile = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                const base64FullString = reader.result; // Chuỗi đầy đủ: data:image/...;base64,...
-                const base64String = base64FullString.split(',')[1]; // Chỉ lấy phần Base64 thô
-                setAvatarPreview(base64FullString); // Preview vẫn dùng chuỗi đầy đủ để hiển thị ảnh
-                setFormData((prev) => ({ ...prev, avatar: base64String })); // Lưu Base64 thô vào formData
-                console.log("Base64 Thô:", base64String); // Log để kiểm tra
+                const base64FullString = reader.result;
+                const base64String = base64FullString.split(',')[1];
+                setAvatarPreview(base64FullString);
+                setFormData((prev) => ({ ...prev, avatar: base64String }));
+                console.log("Base64 Thô:", base64String);
             };
-            reader.readAsDataURL(file); // Chuyển file thành Base64
-            console.log("Selected File:", file); // Log file gốc
+            reader.readAsDataURL(file);
+            console.log("Selected File:", file);
         }
     };
 
@@ -69,7 +69,6 @@ const Profile = () => {
                 }
             );
     
-            // Kiểm tra lỗi từ server
             if (response.data && response.data.error) {
                 throw new Error(response.data.error);
             }
@@ -86,11 +85,9 @@ const Profile = () => {
                 vipEndDate: response.data.data.vipEndDate || ''
             };
     
-            // Kết hợp dữ liệu và kiểm tra trước khi dispatch
             const updatedUserData = { ...(user || {}), ...userUpdate };
-            console.log("Dữ liệu gửi đi:", updatedUserData); // Ghi log để kiểm tra
+            console.log("Dữ liệu gửi đi:", updatedUserData);
     
-            // Dispatch action
             dispatch(updateUser(updatedUserData));
             
             toast.success('Cập nhật thông tin thành công!');
@@ -103,11 +100,23 @@ const Profile = () => {
             setLoading(false);
         }
     };
-    
+
+    const handleGoBack = () => {
+        navigate(-1); // Quay lại trang trước đó
+    };
 
     return (
         <div className="min-h-screen bg-neutral-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-24">
             <div className="max-w-lg w-full bg-neutral-800 rounded-xl shadow-2xl p-8 transform transition-all duration-300 hover:shadow-green-500/20">
+                {/* Nút Quay lại */}
+                <button
+                    onClick={handleGoBack}
+                    className="flex items-center text-neutral-400 hover:text-green-500 mb-6 transition-colors duration-200"
+                >
+                    <FaArrowLeft className="mr-2" />
+                    Quay lại
+                </button>
+
                 <h1 className="text-3xl font-bold text-green-500 mb-8 text-center">Hồ sơ cá nhân</h1>
 
                 {/* Avatar */}
