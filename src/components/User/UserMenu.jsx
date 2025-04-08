@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaCrown, FaSignOutAlt, FaFileAlt, FaUserEdit } from 'react-icons/fa';
+import { FaCrown, FaSignOutAlt, FaFileAlt, FaUserEdit, FaHistory } from 'react-icons/fa';
 
 const UserMenu = ({ user, onClose, onLogout }) => {
     const navigate = useNavigate();
@@ -65,6 +65,13 @@ const UserMenu = ({ user, onClose, onLogout }) => {
                 className="w-full flex items-center px-4 py-3 text-green-500 hover:bg-green-800 rounded-lg transition-all"
             >
                 <FaCrown className="mr-3" /> Mua gói VIP
+            </button>
+
+            <button
+                onClick={() => { navigate('/payment-history'); onClose(); }}
+                className="w-full flex items-center px-4 py-3 text-neutral-200 hover:bg-neutral-800 rounded-lg transition-all"
+            >
+                <FaHistory className="mr-3" /> Lịch sử thanh toán
             </button>
 
             <button

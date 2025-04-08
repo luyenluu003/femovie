@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { Routes, Route} from 'react-router-dom'
 import Home from "./pages/home/home"
-import Login from "./pages/auth/login"
 import ResetPassword from "./pages/auth/ResetPassword"
 import { ToastContainer } from "react-toastify"
 import AutoLogout from "./context/AutoLogout"
@@ -20,6 +19,8 @@ import ChangePassword from "./pages/user/ChangePassword"
 import TermsOfUse from "./pages/TermsOfUse/TermsOfUse"
 import Chatbot from "./pages/chatbot/Chatbot"
 import MovieVip from "./pages/vip/MovieVip"
+import PaymentHistory from "./pages/paypal/PaymentHistory"
+import Login from "./pages/auth/Login"
 
 const App = () => {
 
@@ -47,7 +48,7 @@ const App = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
-
+          <Route path="/payment-history" element={<PaymentHistory />} />
         </Routes>
         <Chatbot />
     </div>
